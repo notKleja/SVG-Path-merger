@@ -1,6 +1,6 @@
 // DOM Elements
 const fileInput = document.getElementById('fileInput');
-const resultsContainer = document.getElementById('resultsContainer');
+const resetBtn = document.getElementById('resetBtn');
 
 // Original SVG elements
 const originalSvgPreview = document.getElementById('originalSvgPreview');
@@ -8,7 +8,6 @@ const originalSvgCode = document.getElementById('originalSvgCode');
 const originalZoomInBtn = document.getElementById('originalZoomInBtn');
 const originalZoomOutBtn = document.getElementById('originalZoomOutBtn');
 const originalResetZoomBtn = document.getElementById('originalResetZoomBtn');
-const originalColorizeBtn = document.getElementById('originalColorizeBtn');
 
 // Processed SVG elements
 const processedSvgPreview = document.getElementById('processedSvgPreview');
@@ -16,7 +15,10 @@ const processedSvgCode = document.getElementById('processedSvgCode');
 const processedZoomInBtn = document.getElementById('processedZoomInBtn');
 const processedZoomOutBtn = document.getElementById('processedZoomOutBtn');
 const processedResetZoomBtn = document.getElementById('processedResetZoomBtn');
-const processedColorizeBtn = document.getElementById('processedColorizeBtn');
+const copyProcessedBtn = document.getElementById('copyProcessedBtn');
+
+// Color button
+const colorizeBtn = document.getElementById('colorizeBtn');
 
 // State
 let originalScale = 1;
@@ -37,7 +39,6 @@ fileInput.addEventListener('change', async (e) => {
         processSvg(svgContent);
     } catch (error) {
         console.error('Error reading file:', error);
-        resultsContainer.innerHTML = `<p class="error">Error reading file: ${error.message}</p>`;
     }
 });
 
@@ -45,13 +46,11 @@ fileInput.addEventListener('change', async (e) => {
 originalZoomInBtn.addEventListener('click', () => handleZoom('original', ZOOM_FACTOR));
 originalZoomOutBtn.addEventListener('click', () => handleZoom('original', 1 / ZOOM_FACTOR));
 originalResetZoomBtn.addEventListener('click', () => resetZoom('original'));
-originalColorizeBtn.addEventListener('click', () => toggleColorize('original'));
 
 // Processed SVG controls
 processedZoomInBtn.addEventListener('click', () => handleZoom('processed', ZOOM_FACTOR));
 processedZoomOutBtn.addEventListener('click', () => handleZoom('processed', 1 / ZOOM_FACTOR));
 processedResetZoomBtn.addEventListener('click', () => resetZoom('processed'));
-processedColorizeBtn.addEventListener('click', () => toggleColorize('processed'));
 
 // Setup path highlighting
 function setupPathHighlighting() {
@@ -126,19 +125,27 @@ function removeHighlight(pathId) {
 
 // Format SVG code for display
 function formatSvgCode(svgContent) {
-    // Add unique IDs to paths if they don't have one
+    // Parse the SVG content
     const parser = new DOMParser();
     const doc = parser.parseFromString(svgContent, 'image/svg+xml');
     const paths = doc.querySelectorAll('path');
     
+    // Add IDs for functionality but don't show them in the code
     paths.forEach((path, index) => {
         if (!path.id) {
             path.setAttribute('data-path-id', `path-${index}`);
         }
     });
 
-    // Format the code
-    const formattedCode = doc.documentElement.outerHTML
+    // Create a clean version for display
+    const cleanDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+    const cleanPaths = cleanDoc.querySelectorAll('path');
+    cleanPaths.forEach(path => {
+        path.removeAttribute('data-path-id');
+    });
+
+    // Format the clean code
+    const formattedCode = cleanDoc.documentElement.outerHTML
         .replace(/></g, '>\n<')
         .replace(/\s+/g, ' ')
         .trim();
@@ -185,20 +192,6 @@ function processFiles(files) {
     console.log('Processing files:', files);
 }
 
-// Show message to user
-function showMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.textContent = message;
-    
-    resultsContainer.appendChild(messageDiv);
-    
-    // Remove message after 3 seconds
-    setTimeout(() => {
-        messageDiv.remove();
-    }, 3000);
-}
-
 // Format file size
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
@@ -212,50 +205,113 @@ function formatFileSize(bytes) {
 
 // Generate random color
 function generateRandomColor() {
-    const hue = Math.floor(Math.random() * 360);
-    const saturation = 70 + Math.floor(Math.random() * 30); // 70-100%
-    const lightness = 45 + Math.floor(Math.random() * 10); // 45-55%
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    // Predefined color palette with variations
+    const colors = [
+        // Red variations
+        '#F05252', // Red-500
+        '#DC2626', // Red-600
+        '#B91C1C', // Red-700
+        '#EF4444', // Red-400
+        
+        // Yellow variations
+        '#FACA15', // Yellow-500
+        '#EAB308', // Yellow-600
+        '#CA8A04', // Yellow-700
+        '#FCD34D', // Yellow-400
+        
+        // Green variations
+        '#22A06B', // Green-500
+        '#059669', // Green-600
+        '#047857', // Green-700
+        '#34D399', // Green-400
+        
+        // Blue variations
+        '#1C64F2', // Blue-500
+        '#2563EB', // Blue-600
+        '#1D4ED8', // Blue-700
+        '#60A5FA', // Blue-400
+        
+        // Purple variations
+        '#7C3AED', // Purple-500
+        '#6D28D9', // Purple-600
+        '#5B21B6', // Purple-700
+        '#A78BFA', // Purple-400
+        
+        // Pink variations
+        '#EC4899', // Pink-500
+        '#DB2777', // Pink-600
+        '#BE185D', // Pink-700
+        '#F472B6', // Pink-400
+        
+        // Gray variations
+        '#6B7280', // Gray-500
+        '#4B5563', // Gray-600
+        '#374151', // Gray-700
+        '#9CA3AF', // Gray-400
+        
+        // Additional colors
+        '#F97316', // Orange-500
+        '#EA580C', // Orange-600
+        '#C2410C', // Orange-700
+        '#FB923C', // Orange-400
+        
+        '#14B8A6', // Teal-500
+        '#0D9488', // Teal-600
+        '#0F766E', // Teal-700
+        '#2DD4BF', // Teal-400
+        
+        '#8B5CF6', // Indigo-500
+        '#7C3AED', // Indigo-600
+        '#6D28D9', // Indigo-700
+        '#A78BFA'  // Indigo-400
+    ];
+    
+    // Return a random color from the palette
+    return colors[Math.floor(Math.random() * colors.length)];
 }
 
 // Toggle colorize
-function toggleColorize(type) {
-    const preview = type === 'original' ? originalSvgPreview : processedSvgPreview;
-    const button = type === 'original' ? originalColorizeBtn : processedColorizeBtn;
-    const colors = type === 'original' ? originalColors : processedColors;
+function toggleColorize() {
+    const isColorized = originalSvgPreview.classList.contains('colorized');
     
-    if (preview.classList.contains('colorized')) {
-        // Remove colors
-        preview.classList.remove('colorized');
-        button.classList.remove('active');
-        const paths = preview.querySelectorAll('path');
-        paths.forEach(path => {
-            const pathId = path.id || path.getAttribute('data-path-id');
-            const originalColor = colors.get(pathId);
-            if (originalColor) {
-                path.style.fill = originalColor.fill;
-                path.style.stroke = originalColor.stroke;
-            }
+    if (isColorized) {
+        // Remove colors from both previews
+        [originalSvgPreview, processedSvgPreview].forEach(preview => {
+            preview.classList.remove('colorized');
+            const paths = preview.querySelectorAll('path');
+            paths.forEach(path => {
+                const pathId = path.id || path.getAttribute('data-path-id');
+                const colors = preview === originalSvgPreview ? originalColors : processedColors;
+                const originalColor = colors.get(pathId);
+                if (originalColor) {
+                    path.style.fill = originalColor.fill;
+                    path.style.stroke = originalColor.stroke;
+                }
+            });
         });
+        colorizeBtn.classList.remove('active');
     } else {
-        // Add colors
-        preview.classList.add('colorized');
-        button.classList.add('active');
-        const paths = preview.querySelectorAll('path');
-        paths.forEach(path => {
-            const pathId = path.id || path.getAttribute('data-path-id');
-            // Store original colors
-            if (!colors.has(pathId)) {
-                colors.set(pathId, {
-                    fill: path.style.fill || path.getAttribute('fill') || 'none',
-                    stroke: path.style.stroke || path.getAttribute('stroke') || 'none'
-                });
-            }
-            // Apply random color
-            const color = generateRandomColor();
-            path.style.fill = color;
-            path.style.stroke = color;
+        // Add colors to both previews
+        [originalSvgPreview, processedSvgPreview].forEach(preview => {
+            preview.classList.add('colorized');
+            const paths = preview.querySelectorAll('path');
+            const colors = preview === originalSvgPreview ? originalColors : processedColors;
+            paths.forEach(path => {
+                const pathId = path.id || path.getAttribute('data-path-id');
+                // Store original colors
+                if (!colors.has(pathId)) {
+                    colors.set(pathId, {
+                        fill: path.style.fill || path.getAttribute('fill') || 'none',
+                        stroke: path.style.stroke || path.getAttribute('stroke') || 'none'
+                    });
+                }
+                // Apply random color
+                const color = generateRandomColor();
+                path.style.fill = color;
+                path.style.stroke = color;
+            });
         });
+        colorizeBtn.classList.add('active');
     }
 }
 
@@ -286,7 +342,7 @@ function displayOriginalSvg(svgContent) {
     // Display in preview
     originalSvgPreview.innerHTML = svgContent;
     
-    // Display formatted code as text
+    // Display formatted code
     originalSvgCode.textContent = formatSvgCode(svgContent);
     
     // Setup path highlighting
@@ -294,6 +350,9 @@ function displayOriginalSvg(svgContent) {
     
     // Reset zoom
     resetZoom('original');
+
+    // Show reset button
+    resetBtn.style.display = 'block';
 }
 
 // Process SVG
@@ -363,3 +422,58 @@ function displayProcessedSvg(svgContent) {
     // Reset zoom
     resetZoom('processed');
 }
+
+// Reset website state
+function resetWebsite() {
+    // Clear file input
+    fileInput.value = '';
+    
+    // Reset previews
+    originalSvgPreview.innerHTML = '<p class="preview-placeholder">Upload an SVG file to see preview</p>';
+    processedSvgPreview.innerHTML = '<p class="preview-placeholder">Processed SVG will appear here</p>';
+    
+    // Clear code sections
+    originalSvgCode.textContent = '';
+    processedSvgCode.textContent = '';
+    
+    // Reset zoom
+    originalScale = 1;
+    processedScale = 1;
+    
+    // Reset colors
+    originalColors.clear();
+    processedColors.clear();
+    
+    // Remove colorize active state
+    colorizeBtn.classList.remove('active');
+    originalSvgPreview.classList.remove('colorized');
+    processedSvgPreview.classList.remove('colorized');
+    
+    // Reset highlighted path
+    highlightedPath = null;
+
+    // Hide reset button
+    resetBtn.style.display = 'none';
+}
+
+// Copy processed SVG code
+async function copyProcessedCode() {
+    try {
+        await navigator.clipboard.writeText(processedSvgCode.textContent);
+        copyProcessedBtn.classList.add('copied');
+        copyProcessedBtn.textContent = 'Copied!';
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            copyProcessedBtn.classList.remove('copied');
+            copyProcessedBtn.textContent = 'Copy';
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy text: ', err);
+    }
+}
+
+// Add event listeners
+colorizeBtn.addEventListener('click', toggleColorize);
+resetBtn.addEventListener('click', resetWebsite);
+copyProcessedBtn.addEventListener('click', copyProcessedCode);

@@ -14,15 +14,18 @@
 
     <main>
         <section class="upload-section">
-            <h2>Upload Files</h2>
+            <h2>Select SVG File</h2>
             <div class="file-upload-container">
-                <input type="file" id="fileInput" accept=".svg" multiple>
-                <button id="uploadBtn">Upload Files</button>
+                <input type="file" id="fileInput" accept=".svg">
+                <button id="resetBtn" class="reset-btn">Reset</button>
             </div>
         </section>
 
         <section class="preview-section">
-            <h2>SVG Comparison</h2>
+            <div class="section-header">
+                <h2>SVG Comparison</h2>
+                <button id="colorizeBtn" class="control-btn colorize-btn" title="Toggle random colors">Color</button>
+            </div>
             <div class="comparison-container">
                 <div class="svg-column">
                     <h3>Original SVG</h3>
@@ -55,17 +58,13 @@
                         </div>
                     </div>
                     <div class="code-container">
-                        <h4>Processed Code</h4>
+                        <div class="code-header">
+                            <h4>Processed Code</h4>
+                            <button id="copyProcessedBtn" class="control-btn copy-btn" title="Copy to clipboard">Copy</button>
+                        </div>
                         <pre id="processedSvgCode" class="svg-code"></pre>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <section class="results-section">
-            <h2>Results</h2>
-            <div id="resultsContainer">
-                <!-- Results will be displayed here -->
             </div>
         </section>
     </main>
