@@ -2,28 +2,46 @@
 const fileInput = document.getElementById('fileInput');
 const uploadBtn = document.getElementById('uploadBtn');
 const resultsContainer = document.getElementById('resultsContainer');
-const svgPreview = document.getElementById('svgPreview');
-const zoomInBtn = document.getElementById('zoomInBtn');
-const zoomOutBtn = document.getElementById('zoomOutBtn');
-const resetZoomBtn = document.getElementById('resetZoomBtn');
+
+// Original SVG elements
+const originalSvgPreview = document.getElementById('originalSvgPreview');
+const originalSvgCode = document.getElementById('originalSvgCode');
+const originalZoomInBtn = document.getElementById('originalZoomInBtn');
+const originalZoomOutBtn = document.getElementById('originalZoomOutBtn');
+const originalResetZoomBtn = document.getElementById('originalResetZoomBtn');
+
+// Processed SVG elements
+const processedSvgPreview = document.getElementById('processedSvgPreview');
+const processedSvgCode = document.getElementById('processedSvgCode');
+const processedZoomInBtn = document.getElementById('processedZoomInBtn');
+const processedZoomOutBtn = document.getElementById('processedZoomOutBtn');
+const processedResetZoomBtn = document.getElementById('processedResetZoomBtn');
 
 // State
-let currentScale = 1;
+let originalScale = 1;
+let processedScale = 1;
 const ZOOM_FACTOR = 1.2;
 
 // Event Listeners
 uploadBtn.addEventListener('click', handleFileUpload);
 fileInput.addEventListener('change', handleFileSelection);
-zoomInBtn.addEventListener('click', () => handleZoom(ZOOM_FACTOR));
-zoomOutBtn.addEventListener('click', () => handleZoom(1 / ZOOM_FACTOR));
-resetZoomBtn.addEventListener('click', resetZoom);
+
+// Original SVG controls
+originalZoomInBtn.addEventListener('click', () => handleZoom('original', ZOOM_FACTOR));
+originalZoomOutBtn.addEventListener('click', () => handleZoom('original', 1 / ZOOM_FACTOR));
+originalResetZoomBtn.addEventListener('click', () => resetZoom('original'));
+
+// Processed SVG controls
+processedZoomInBtn.addEventListener('click', () => handleZoom('processed', ZOOM_FACTOR));
+processedZoomOutBtn.addEventListener('click', () => handleZoom('processed', 1 / ZOOM_FACTOR));
+processedResetZoomBtn.addEventListener('click', () => resetZoom('processed'));
 
 // Handle file selection
 function handleFileSelection(event) {
     const files = event.target.files;
     if (files.length > 0) {
         displaySelectedFiles(files);
-        previewSVG(files[0]); // Preview the first SVG file
+        previewOriginalSvg(files[0]);
     }
 }
 
@@ -53,8 +71,8 @@ function displaySelectedFiles(files) {
     `;
 }
 
-// Preview SVG file
-function previewSVG(file) {
+// Preview original SVG file
+function previewOriginalSvg(file) {
     if (!file.type.includes('svg')) {
         showMessage('Please select an SVG file', 'error');
         return;
@@ -62,28 +80,60 @@ function previewSVG(file) {
 
     const reader = new FileReader();
     reader.onload = function(e) {
-        svgPreview.innerHTML = e.target.result;
-        resetZoom(); // Reset zoom when new SVG is loaded
+        const svgContent = e.target.result;
+        originalSvgPreview.innerHTML = svgContent;
+        originalSvgCode.textContent = formatSvgCode(svgContent);
+        resetZoom('original');
+        
+        // For now, just copy the original to processed
+        // This will be replaced with actual processing later
+        processedSvgPreview.innerHTML = svgContent;
+        processedSvgCode.textContent = formatSvgCode(svgContent);
+        resetZoom('processed');
     };
     reader.readAsText(file);
 }
 
+// Format SVG code for display
+function formatSvgCode(svgContent) {
+    // Basic formatting - you might want to add more sophisticated formatting
+    return svgContent
+        .replace(/></g, '>\n<')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 // Handle zoom
-function handleZoom(factor) {
-    const svg = svgPreview.querySelector('svg');
+function handleZoom(type, factor) {
+    const preview = type === 'original' ? originalSvgPreview : processedSvgPreview;
+    const scale = type === 'original' ? originalScale : processedScale;
+    const svg = preview.querySelector('svg');
+    
     if (!svg) return;
 
-    currentScale *= factor;
-    svg.style.transform = `scale(${currentScale})`;
+    if (type === 'original') {
+        originalScale *= factor;
+        svg.style.transform = `scale(${originalScale})`;
+    } else {
+        processedScale *= factor;
+        svg.style.transform = `scale(${processedScale})`;
+    }
 }
 
 // Reset zoom
-function resetZoom() {
-    const svg = svgPreview.querySelector('svg');
+function resetZoom(type) {
+    const preview = type === 'original' ? originalSvgPreview : processedSvgPreview;
+    const svg = preview.querySelector('svg');
+    
     if (!svg) return;
 
-    currentScale = 1;
-    svg.style.transform = 'scale(1)';
+    if (type === 'original') {
+        originalScale = 1;
+        svg.style.transform = 'scale(1)';
+    } else {
+        processedScale = 1;
+        svg.style.transform = 'scale(1)';
+    }
 }
 
 // Process files (placeholder for actual processing logic)

@@ -22,15 +22,42 @@
         </section>
 
         <section class="preview-section">
-            <h2>SVG Preview</h2>
-            <div class="preview-container">
-                <div id="svgPreview" class="svg-preview">
-                    <p class="preview-placeholder">Upload an SVG file to see preview</p>
+            <h2>SVG Comparison</h2>
+            <div class="comparison-container">
+                <div class="svg-column">
+                    <h3>Original SVG</h3>
+                    <div class="preview-container">
+                        <div id="originalSvgPreview" class="svg-preview">
+                            <p class="preview-placeholder">Upload an SVG file to see preview</p>
+                        </div>
+                        <div class="preview-controls">
+                            <button id="originalZoomInBtn" class="control-btn">+</button>
+                            <button id="originalZoomOutBtn" class="control-btn">-</button>
+                            <button id="originalResetZoomBtn" class="control-btn">Reset</button>
+                        </div>
+                    </div>
+                    <div class="code-container">
+                        <h4>SVG Code</h4>
+                        <pre id="originalSvgCode" class="svg-code"></pre>
+                    </div>
                 </div>
-                <div class="preview-controls">
-                    <button id="zoomInBtn" class="control-btn">+</button>
-                    <button id="zoomOutBtn" class="control-btn">-</button>
-                    <button id="resetZoomBtn" class="control-btn">Reset</button>
+
+                <div class="svg-column">
+                    <h3>Processed SVG</h3>
+                    <div class="preview-container">
+                        <div id="processedSvgPreview" class="svg-preview">
+                            <p class="preview-placeholder">Processed SVG will appear here</p>
+                        </div>
+                        <div class="preview-controls">
+                            <button id="processedZoomInBtn" class="control-btn">+</button>
+                            <button id="processedZoomOutBtn" class="control-btn">-</button>
+                            <button id="processedResetZoomBtn" class="control-btn">Reset</button>
+                        </div>
+                    </div>
+                    <div class="code-container">
+                        <h4>Processed Code</h4>
+                        <pre id="processedSvgCode" class="svg-code"></pre>
+                    </div>
                 </div>
             </div>
         </section>
