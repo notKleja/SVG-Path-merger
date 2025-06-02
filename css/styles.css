@@ -223,25 +223,59 @@ button:hover {
     filter: drop-shadow(0 0 2px rgba(231, 76, 60, 0.5));
 }
 
-/* Code highlighting */
-.svg-code .highlighted {
-    background-color: rgba(231, 76, 60, 0.2);
-    border-radius: 2px;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.5);
+    border: 2px solid transparent;
+    background-clip: padding-box;
 }
 
 /* Code container */
 .code-container {
-    padding: 0.5rem;
+    padding: 0;
     width: 100%;
     max-width: 100%;
     overflow-x: auto;
+    background-color: #e5e7eb;
+    border-radius: 6px;
+}
+
+.code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: #d1d5db;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom: 1px solid #9ca3af;
+}
+
+.code-header h4 {
+    margin-bottom: 0;
+    color: #374151;
 }
 
 .svg-code {
-    background-color: #e5e7eb;
     color: #343541;
     padding: 0.5rem;
-    border-radius: 6px;
     font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.8rem;
     line-height: 1.2;
@@ -251,6 +285,9 @@ button:hover {
     overflow-y: auto;
     width: 100%;
     display: block;
+    margin: 0;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
 /* Footer */
@@ -386,18 +423,6 @@ footer a:hover {
 
 .reset-btn:hover {
     background-color: #b91c1c;
-}
-
-/* Code header */
-.code-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.code-header h4 {
-    margin-bottom: 0;
 }
 
 /* Copy button */
