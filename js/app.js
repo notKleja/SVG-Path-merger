@@ -137,16 +137,11 @@ function formatSvgCode(svgContent) {
         }
     });
 
-    // Format the code and escape HTML
+    // Format the code
     const formattedCode = doc.documentElement.outerHTML
         .replace(/></g, '>\n<')
         .replace(/\s+/g, ' ')
-        .trim()
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .trim();
 
     return formattedCode;
 }
@@ -299,4 +294,72 @@ function displayOriginalSvg(svgContent) {
     
     // Reset zoom
     resetZoom('original');
+}
+
+// Process SVG
+function processSvg(svgContent) {
+    // Parse the SVG content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+    
+    // Get all paths
+    const paths = doc.querySelectorAll('path');
+    if (paths.length <= 1) {
+        // If there's only one or no paths, just display as is
+        displayProcessedSvg(svgContent);
+        return;
+    }
+
+    // Get the first path to use as the base
+    const firstPath = paths[0];
+    let mergedPathData = firstPath.getAttribute('d');
+    
+    // Combine all path data
+    for (let i = 1; i < paths.length; i++) {
+        const pathData = paths[i].getAttribute('d');
+        if (pathData) {
+            // Add a space and M command if the path data doesn't start with M
+            if (!pathData.trim().startsWith('M')) {
+                mergedPathData += ' M';
+            }
+            mergedPathData += ' ' + pathData;
+        }
+    }
+
+    // Create new SVG with merged path
+    const newSvg = doc.documentElement.cloneNode(true);
+    // Remove all existing paths
+    const existingPaths = newSvg.querySelectorAll('path');
+    existingPaths.forEach(path => path.remove());
+    
+    // Create new merged path
+    const mergedPath = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
+    mergedPath.setAttribute('d', mergedPathData);
+    // Copy attributes from first path (except d)
+    Array.from(firstPath.attributes).forEach(attr => {
+        if (attr.name !== 'd') {
+            mergedPath.setAttribute(attr.name, attr.value);
+        }
+    });
+    
+    // Add the merged path to the SVG
+    newSvg.appendChild(mergedPath);
+    
+    // Display the processed SVG
+    displayProcessedSvg(newSvg.outerHTML);
+}
+
+// Display processed SVG
+function displayProcessedSvg(svgContent) {
+    // Display in preview
+    processedSvgPreview.innerHTML = svgContent;
+    
+    // Display formatted code
+    processedSvgCode.textContent = formatSvgCode(svgContent);
+    
+    // Setup path highlighting
+    setupPathHighlighting();
+    
+    // Reset zoom
+    resetZoom('processed');
 }
