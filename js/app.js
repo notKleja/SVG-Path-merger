@@ -1,6 +1,5 @@
 // DOM Elements
 const fileInput = document.getElementById('fileInput');
-const uploadBtn = document.getElementById('uploadBtn');
 const resultsContainer = document.getElementById('resultsContainer');
 
 // Original SVG elements
@@ -9,6 +8,7 @@ const originalSvgCode = document.getElementById('originalSvgCode');
 const originalZoomInBtn = document.getElementById('originalZoomInBtn');
 const originalZoomOutBtn = document.getElementById('originalZoomOutBtn');
 const originalResetZoomBtn = document.getElementById('originalResetZoomBtn');
+const originalColorizeBtn = document.getElementById('originalColorizeBtn');
 
 // Processed SVG elements
 const processedSvgPreview = document.getElementById('processedSvgPreview');
@@ -16,87 +16,42 @@ const processedSvgCode = document.getElementById('processedSvgCode');
 const processedZoomInBtn = document.getElementById('processedZoomInBtn');
 const processedZoomOutBtn = document.getElementById('processedZoomOutBtn');
 const processedResetZoomBtn = document.getElementById('processedResetZoomBtn');
+const processedColorizeBtn = document.getElementById('processedColorizeBtn');
 
 // State
 let originalScale = 1;
 let processedScale = 1;
 const ZOOM_FACTOR = 1.2;
 let highlightedPath = null;
+let originalColors = new Map();
+let processedColors = new Map();
 
 // Event Listeners
-uploadBtn.addEventListener('click', handleFileUpload);
-fileInput.addEventListener('change', handleFileSelection);
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const svgContent = await file.text();
+        displayOriginalSvg(svgContent);
+        processSvg(svgContent);
+    } catch (error) {
+        console.error('Error reading file:', error);
+        resultsContainer.innerHTML = `<p class="error">Error reading file: ${error.message}</p>`;
+    }
+});
 
 // Original SVG controls
 originalZoomInBtn.addEventListener('click', () => handleZoom('original', ZOOM_FACTOR));
 originalZoomOutBtn.addEventListener('click', () => handleZoom('original', 1 / ZOOM_FACTOR));
 originalResetZoomBtn.addEventListener('click', () => resetZoom('original'));
+originalColorizeBtn.addEventListener('click', () => toggleColorize('original'));
 
 // Processed SVG controls
 processedZoomInBtn.addEventListener('click', () => handleZoom('processed', ZOOM_FACTOR));
 processedZoomOutBtn.addEventListener('click', () => handleZoom('processed', 1 / ZOOM_FACTOR));
 processedResetZoomBtn.addEventListener('click', () => resetZoom('processed'));
-
-// Handle file selection
-function handleFileSelection(event) {
-    const files = event.target.files;
-    if (files.length > 0) {
-        displaySelectedFiles(files);
-        previewOriginalSvg(files[0]);
-    }
-}
-
-// Handle file upload
-function handleFileUpload() {
-    const files = fileInput.files;
-    if (files.length === 0) {
-        showMessage('Please select files to upload', 'error');
-        return;
-    }
-
-    // Here you would typically send the files to a server
-    // For now, we'll just display a success message
-    showMessage('Files uploaded successfully!', 'success');
-    processFiles(files);
-}
-
-// Display selected files
-function displaySelectedFiles(files) {
-    const fileList = Array.from(files)
-        .map(file => `<li>${file.name} (${formatFileSize(file.size)})</li>`)
-        .join('');
-    
-    resultsContainer.innerHTML = `
-        <h3>Selected Files:</h3>
-        <ul>${fileList}</ul>
-    `;
-}
-
-// Preview original SVG file
-function previewOriginalSvg(file) {
-    if (!file.type.includes('svg')) {
-        showMessage('Please select an SVG file', 'error');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const svgContent = e.target.result;
-        originalSvgPreview.innerHTML = svgContent;
-        originalSvgCode.textContent = formatSvgCode(svgContent);
-        resetZoom('original');
-        
-        // For now, just copy the original to processed
-        // This will be replaced with actual processing later
-        processedSvgPreview.innerHTML = svgContent;
-        processedSvgCode.textContent = formatSvgCode(svgContent);
-        resetZoom('processed');
-
-        // Add path highlighting functionality
-        setupPathHighlighting();
-    };
-    reader.readAsText(file);
-}
+processedColorizeBtn.addEventListener('click', () => toggleColorize('processed'));
 
 // Setup path highlighting
 function setupPathHighlighting() {
@@ -169,28 +124,6 @@ function removeHighlight(pathId) {
     removeHighlightFromCode(pathId);
 }
 
-// Highlight path in code
-function highlightPathInCode(pathId) {
-    const codeElements = document.querySelectorAll('.svg-code');
-    codeElements.forEach(codeElement => {
-        const code = codeElement.textContent;
-        const pathRegex = new RegExp(`<path[^>]*id="${pathId}"[^>]*>|<path[^>]*data-path-id="${pathId}"[^>]*>`, 'g');
-        const highlightedCode = code.replace(pathRegex, match => `<span class="highlighted">${match}</span>`);
-        codeElement.innerHTML = highlightedCode;
-    });
-}
-
-// Remove highlight from code
-function removeHighlightFromCode(pathId) {
-    const codeElements = document.querySelectorAll('.svg-code');
-    codeElements.forEach(codeElement => {
-        const code = codeElement.innerHTML;
-        const pathRegex = new RegExp(`<span class="highlighted">(<path[^>]*id="${pathId}"[^>]*>|<path[^>]*data-path-id="${pathId}"[^>]*>)</span>`, 'g');
-        const unhighlightedCode = code.replace(pathRegex, '$1');
-        codeElement.innerHTML = unhighlightedCode;
-    });
-}
-
 // Format SVG code for display
 function formatSvgCode(svgContent) {
     // Add unique IDs to paths if they don't have one
@@ -204,11 +137,18 @@ function formatSvgCode(svgContent) {
         }
     });
 
-    // Format the code
-    return doc.documentElement.outerHTML
+    // Format the code and escape HTML
+    const formattedCode = doc.documentElement.outerHTML
         .replace(/></g, '>\n<')
         .replace(/\s+/g, ' ')
-        .trim();
+        .trim()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    return formattedCode;
 }
 
 // Handle zoom
@@ -273,4 +213,90 @@ function formatFileSize(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-} 
+}
+
+// Generate random color
+function generateRandomColor() {
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = 70 + Math.floor(Math.random() * 30); // 70-100%
+    const lightness = 45 + Math.floor(Math.random() * 10); // 45-55%
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+// Toggle colorize
+function toggleColorize(type) {
+    const preview = type === 'original' ? originalSvgPreview : processedSvgPreview;
+    const button = type === 'original' ? originalColorizeBtn : processedColorizeBtn;
+    const colors = type === 'original' ? originalColors : processedColors;
+    
+    if (preview.classList.contains('colorized')) {
+        // Remove colors
+        preview.classList.remove('colorized');
+        button.classList.remove('active');
+        const paths = preview.querySelectorAll('path');
+        paths.forEach(path => {
+            const pathId = path.id || path.getAttribute('data-path-id');
+            const originalColor = colors.get(pathId);
+            if (originalColor) {
+                path.style.fill = originalColor.fill;
+                path.style.stroke = originalColor.stroke;
+            }
+        });
+    } else {
+        // Add colors
+        preview.classList.add('colorized');
+        button.classList.add('active');
+        const paths = preview.querySelectorAll('path');
+        paths.forEach(path => {
+            const pathId = path.id || path.getAttribute('data-path-id');
+            // Store original colors
+            if (!colors.has(pathId)) {
+                colors.set(pathId, {
+                    fill: path.style.fill || path.getAttribute('fill') || 'none',
+                    stroke: path.style.stroke || path.getAttribute('stroke') || 'none'
+                });
+            }
+            // Apply random color
+            const color = generateRandomColor();
+            path.style.fill = color;
+            path.style.stroke = color;
+        });
+    }
+}
+
+// Highlight path in code
+function highlightPathInCode(pathId) {
+    const codeElements = document.querySelectorAll('.svg-code');
+    codeElements.forEach(codeElement => {
+        const code = codeElement.textContent;
+        const pathRegex = new RegExp(`<path[^>]*id="${pathId}"[^>]*>|<path[^>]*data-path-id="${pathId}"[^>]*>`, 'g');
+        const highlightedCode = code.replace(pathRegex, match => `[HIGHLIGHT]${match}[/HIGHLIGHT]`);
+        codeElement.textContent = highlightedCode;
+    });
+}
+
+// Remove highlight from code
+function removeHighlightFromCode(pathId) {
+    const codeElements = document.querySelectorAll('.svg-code');
+    codeElements.forEach(codeElement => {
+        const code = codeElement.textContent;
+        const pathRegex = new RegExp(`\\[HIGHLIGHT\\](<path[^>]*id="${pathId}"[^>]*>|<path[^>]*data-path-id="${pathId}"[^>]*>)\\[/HIGHLIGHT\\]`, 'g');
+        const unhighlightedCode = code.replace(pathRegex, '$1');
+        codeElement.textContent = unhighlightedCode;
+    });
+}
+
+// Display original SVG
+function displayOriginalSvg(svgContent) {
+    // Display in preview
+    originalSvgPreview.innerHTML = svgContent;
+    
+    // Display formatted code as text
+    originalSvgCode.textContent = formatSvgCode(svgContent);
+    
+    // Setup path highlighting
+    setupPathHighlighting();
+    
+    // Reset zoom
+    resetZoom('original');
+}
