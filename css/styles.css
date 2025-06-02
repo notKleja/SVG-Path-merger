@@ -6,7 +6,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: "Fredoka", sans-serif;
     line-height: 1.6;
     color: #343541;
     background-color: #ffffff;
@@ -19,7 +19,6 @@ header {
     color: #343541;
     padding: 1rem;
     text-align: center;
-    border-bottom: 1px solid #e5e5e5;
     width: 100%;
 }
 
@@ -35,7 +34,6 @@ section {
     border-radius: 12px;
     padding: 2rem;
     margin-bottom: 2rem;
-    border: 1px solid #e5e5e5;
     width: 100%;
 }
 
@@ -78,7 +76,6 @@ h4 {
 
 input[type="file"] {
     padding: 1rem;
-    border: 2px dashed #e5e5e5;
     border-radius: 8px;
     width: 100%;
     max-width: 500px;
@@ -92,6 +89,7 @@ input[type="file"]:hover {
 }
 
 button {
+    font-family: "Fredoka", sans-serif;
     background-color: #10a37f;
     color: white;
     padding: 0.8rem 1.5rem;
@@ -116,12 +114,19 @@ button:hover {
     max-width: 100%;
 }
 
+.preview-section {
+    display: none; /* Hidden by default */
+}
+
 .svg-column {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     width: 100%;
     max-width: 100%;
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
 }
 
 .preview-container {
@@ -136,17 +141,18 @@ button:hover {
 .svg-preview {
     width: 100%;
     height: 200px;
-    border: 1px solid #e5e5e5;
     border-radius: 8px;
     overflow: hidden;
     position: relative;
-    background-color: #ffffff;
+    background-color: #f3f4f6;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1.5rem;
 }
 
 .preview-placeholder {
+    font-family: "Fredoka", sans-serif;
     color: #6e6e80;
     text-align: center;
     font-style: italic;
@@ -165,7 +171,6 @@ button:hover {
     border-radius: 6px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
-    border: 1px solid #e5e5e5;
 }
 
 .control-btn {
@@ -226,9 +231,6 @@ button:hover {
 
 /* Code container */
 .code-container {
-    background-color: #f7f7f8;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
     padding: 0.5rem;
     width: 100%;
     max-width: 100%;
@@ -236,8 +238,8 @@ button:hover {
 }
 
 .svg-code {
-    background-color: #343541;
-    color: #ffffff;
+    background-color: #e5e7eb;
+    color: #343541;
     padding: 0.5rem;
     border-radius: 6px;
     font-family: 'Consolas', 'Monaco', monospace;
@@ -254,12 +256,24 @@ button:hover {
 /* Footer */
 footer {
     text-align: center;
-    padding: 1rem;
+    padding: 2rem;
     background-color: #ffffff;
     color: #6e6e80;
-    border-top: 1px solid #e5e5e5;
     width: 100%;
     margin-top: 2rem;
+    font-size: 1.1rem;
+}
+
+footer a {
+    color: #10a37f;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+footer a:hover {
+    color: #0d8c6d;
+    text-decoration: underline;
 }
 
 /* Responsive design */
@@ -431,4 +445,24 @@ footer {
 
 .fill-rule-btn.evenodd:hover {
     background-color: #6D28D9;
+}
+
+.svg-preview.processed {
+    background-color: #e5e7eb;
+}
+
+.svg-code.processed {
+    background-color: #e5e7eb;
+    color: #343541;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+    width: 100%;
+    display: block;
 } 

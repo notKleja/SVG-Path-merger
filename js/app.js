@@ -339,6 +339,9 @@ function removeHighlightFromCode(pathId) {
 
 // Display original SVG
 function displayOriginalSvg(svgContent) {
+    // Show preview section
+    document.querySelector('.preview-section').style.display = 'block';
+    
     // Display in preview
     originalSvgPreview.innerHTML = svgContent;
     
@@ -454,6 +457,9 @@ function resetWebsite() {
 
     // Hide reset button
     resetBtn.style.display = 'none';
+
+    // Hide preview section
+    document.querySelector('.preview-section').style.display = 'none';
 }
 
 // Copy processed SVG code
