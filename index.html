@@ -16,8 +16,22 @@
         <section class="upload-section">
             <h2>Upload Files</h2>
             <div class="file-upload-container">
-                <input type="file" id="fileInput" multiple>
+                <input type="file" id="fileInput" accept=".svg" multiple>
                 <button id="uploadBtn">Upload Files</button>
+            </div>
+        </section>
+
+        <section class="preview-section">
+            <h2>SVG Preview</h2>
+            <div class="preview-container">
+                <div id="svgPreview" class="svg-preview">
+                    <p class="preview-placeholder">Upload an SVG file to see preview</p>
+                </div>
+                <div class="preview-controls">
+                    <button id="zoomInBtn" class="control-btn">+</button>
+                    <button id="zoomOutBtn" class="control-btn">-</button>
+                    <button id="resetZoomBtn" class="control-btn">Reset</button>
+                </div>
             </div>
         </section>
 

@@ -2,16 +2,28 @@
 const fileInput = document.getElementById('fileInput');
 const uploadBtn = document.getElementById('uploadBtn');
 const resultsContainer = document.getElementById('resultsContainer');
+const svgPreview = document.getElementById('svgPreview');
+const zoomInBtn = document.getElementById('zoomInBtn');
+const zoomOutBtn = document.getElementById('zoomOutBtn');
+const resetZoomBtn = document.getElementById('resetZoomBtn');
+
+// State
+let currentScale = 1;
+const ZOOM_FACTOR = 1.2;
 
 // Event Listeners
 uploadBtn.addEventListener('click', handleFileUpload);
 fileInput.addEventListener('change', handleFileSelection);
+zoomInBtn.addEventListener('click', () => handleZoom(ZOOM_FACTOR));
+zoomOutBtn.addEventListener('click', () => handleZoom(1 / ZOOM_FACTOR));
+resetZoomBtn.addEventListener('click', resetZoom);
 
 // Handle file selection
 function handleFileSelection(event) {
     const files = event.target.files;
     if (files.length > 0) {
         displaySelectedFiles(files);
+        previewSVG(files[0]); // Preview the first SVG file
     }
 }
 
@@ -39,6 +51,39 @@ function displaySelectedFiles(files) {
         <h3>Selected Files:</h3>
         <ul>${fileList}</ul>
     `;
+}
+
+// Preview SVG file
+function previewSVG(file) {
+    if (!file.type.includes('svg')) {
+        showMessage('Please select an SVG file', 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        svgPreview.innerHTML = e.target.result;
+        resetZoom(); // Reset zoom when new SVG is loaded
+    };
+    reader.readAsText(file);
+}
+
+// Handle zoom
+function handleZoom(factor) {
+    const svg = svgPreview.querySelector('svg');
+    if (!svg) return;
+
+    currentScale *= factor;
+    svg.style.transform = `scale(${currentScale})`;
+}
+
+// Reset zoom
+function resetZoom() {
+    const svg = svgPreview.querySelector('svg');
+    if (!svg) return;
+
+    currentScale = 1;
+    svg.style.transform = 'scale(1)';
 }
 
 // Process files (placeholder for actual processing logic)
