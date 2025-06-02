@@ -21,6 +21,7 @@ const processedResetZoomBtn = document.getElementById('processedResetZoomBtn');
 let originalScale = 1;
 let processedScale = 1;
 const ZOOM_FACTOR = 1.2;
+let highlightedPath = null;
 
 // Event Listeners
 uploadBtn.addEventListener('click', handleFileUpload);
@@ -90,14 +91,121 @@ function previewOriginalSvg(file) {
         processedSvgPreview.innerHTML = svgContent;
         processedSvgCode.textContent = formatSvgCode(svgContent);
         resetZoom('processed');
+
+        // Add path highlighting functionality
+        setupPathHighlighting();
     };
     reader.readAsText(file);
 }
 
+// Setup path highlighting
+function setupPathHighlighting() {
+    const paths = document.querySelectorAll('.svg-preview path');
+    paths.forEach(path => {
+        // Add hover events
+        path.addEventListener('mouseenter', handlePathHover);
+        path.addEventListener('mouseleave', handlePathLeave);
+        path.addEventListener('click', handlePathClick);
+    });
+}
+
+// Handle path hover
+function handlePathHover(event) {
+    const path = event.target;
+    const pathId = path.id || path.getAttribute('data-path-id');
+    
+    // Highlight the path in both previews
+    highlightPath(pathId);
+}
+
+// Handle path leave
+function handlePathLeave(event) {
+    const path = event.target;
+    const pathId = path.id || path.getAttribute('data-path-id');
+    
+    // Only remove highlight if it's not the selected path
+    if (highlightedPath !== pathId) {
+        removeHighlight(pathId);
+    }
+}
+
+// Handle path click
+function handlePathClick(event) {
+    const path = event.target;
+    const pathId = path.id || path.getAttribute('data-path-id');
+    
+    if (highlightedPath === pathId) {
+        // If clicking the same path, remove highlight
+        removeHighlight(pathId);
+        highlightedPath = null;
+    } else {
+        // Highlight the clicked path
+        highlightPath(pathId);
+        highlightedPath = pathId;
+    }
+}
+
+// Highlight path
+function highlightPath(pathId) {
+    // Highlight in both previews
+    const paths = document.querySelectorAll(`.svg-preview path[id="${pathId}"], .svg-preview path[data-path-id="${pathId}"]`);
+    paths.forEach(path => {
+        path.classList.add('highlighted');
+    });
+
+    // Highlight in code
+    highlightPathInCode(pathId);
+}
+
+// Remove highlight
+function removeHighlight(pathId) {
+    // Remove highlight from both previews
+    const paths = document.querySelectorAll(`.svg-preview path[id="${pathId}"], .svg-preview path[data-path-id="${pathId}"]`);
+    paths.forEach(path => {
+        path.classList.remove('highlighted');
+    });
+
+    // Remove highlight from code
+    removeHighlightFromCode(pathId);
+}
+
+// Highlight path in code
+function highlightPathInCode(pathId) {
+    const codeElements = document.querySelectorAll('.svg-code');
+    codeElements.forEach(codeElement => {
+        const code = codeElement.textContent;
+        const pathRegex = new RegExp(`<path[^>]*id="${pathId}"[^>]*>|<path[^>]*data-path-id="${pathId}"[^>]*>`, 'g');
+        const highlightedCode = code.replace(pathRegex, match => `<span class="highlighted">${match}</span>`);
+        codeElement.innerHTML = highlightedCode;
+    });
+}
+
+// Remove highlight from code
+function removeHighlightFromCode(pathId) {
+    const codeElements = document.querySelectorAll('.svg-code');
+    codeElements.forEach(codeElement => {
+        const code = codeElement.innerHTML;
+        const pathRegex = new RegExp(`<span class="highlighted">(<path[^>]*id="${pathId}"[^>]*>|<path[^>]*data-path-id="${pathId}"[^>]*>)</span>`, 'g');
+        const unhighlightedCode = code.replace(pathRegex, '$1');
+        codeElement.innerHTML = unhighlightedCode;
+    });
+}
+
 // Format SVG code for display
 function formatSvgCode(svgContent) {
-    // Basic formatting - you might want to add more sophisticated formatting
-    return svgContent
+    // Add unique IDs to paths if they don't have one
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+    const paths = doc.querySelectorAll('path');
+    
+    paths.forEach((path, index) => {
+        if (!path.id) {
+            path.setAttribute('data-path-id', `path-${index}`);
+        }
+    });
+
+    // Format the code
+    return doc.documentElement.outerHTML
         .replace(/></g, '>\n<')
         .replace(/\s+/g, ' ')
         .trim();

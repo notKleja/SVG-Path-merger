@@ -151,6 +151,33 @@ button:hover {
     transition: transform 0.3s ease;
 }
 
+/* SVG path highlighting */
+.svg-preview path {
+    transition: fill 0.2s ease, stroke 0.2s ease;
+    cursor: pointer;
+}
+
+.svg-preview path:hover {
+    fill: #3498db !important;
+    stroke: #2980b9 !important;
+    stroke-width: 2px !important;
+    filter: drop-shadow(0 0 2px rgba(52, 152, 219, 0.5));
+}
+
+/* Add highlight class for when path is selected */
+.svg-preview path.highlighted {
+    fill: #e74c3c !important;
+    stroke: #c0392b !important;
+    stroke-width: 2px !important;
+    filter: drop-shadow(0 0 2px rgba(231, 76, 60, 0.5));
+}
+
+/* Code highlighting */
+.svg-code .highlighted {
+    background-color: rgba(231, 76, 60, 0.2);
+    border-radius: 2px;
+}
+
 /* Code container */
 .code-container {
     background-color: #f8f9fa;
